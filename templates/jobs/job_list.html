@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Browse Jobs | Job Portal</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body class="bg-light">
+
+
+<!-- NAVBAR -->
+
+<nav class="navbar navbar-dark bg-dark">
+
+    <div class="container">
+
+        <a
+            class="navbar-brand fw-bold"
+            href="{% url 'home' %}"
+        >
+            Job Portal
+        </a>
+
+
+        <div>
+
+            {% if user.is_authenticated %}
+
+                <span class="text-white me-3">
+                    Hi, {{ user.username }}
+                </span>
+
+
+                {% if user.is_employer %}
+
+                    <a
+                        href="{% url 'employer_dashboard' %}"
+                        class="btn btn-outline-light me-2"
+                    >
+                        Dashboard
+                    </a>
+
+                {% else %}
+
+                    <a
+                        href="{% url 'seeker_dashboard' %}"
+                        class="btn btn-outline-light me-2"
+                    >
+                        My Applications
+                    </a>
+
+                {% endif %}
+
+
+                <form
+                    method="post"
+                    action="{% url 'logout' %}"
+                    class="d-inline"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-danger"
+                    >
+                        Logout
+                    </button>
+
+                </form>
+
+
+            {% else %}
+
+                <a
+                    href="{% url 'login' %}"
+                    class="btn btn-outline-light me-2"
+                >
+                    Login
+                </a>
+
+                <a
+                    href="{% url 'register' %}"
+                    class="btn btn-primary"
+                >
+                    Register
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+
+<!-- PAGE -->
+
+<div class="container py-5">
+
+
+    <div class="text-center mb-5">
+
+        <h1 class="fw-bold">
+            Find Your Dream Job
+        </h1>
+
+        <p class="text-muted">
+            Search thousands of opportunities and find the right career.
+        </p>
+
+    </div>
+
+
+
+    <!-- SEARCH & FILTER -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body">
+
+            <form method="get">
+
+                <div class="row g-3">
+
+
+                    <!-- SEARCH -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Keyword
+                        </label>
+
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ search }}"
+                            class="form-control"
+                            placeholder="Job title or skills"
+                        >
+
+                    </div>
+
+
+                    <!-- LOCATION -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-semibold">
+                            Location
+                        </label>
+
+                        <input
+                            type="text"
+                            name="location"
+                            value="{{ location }}"
+                            class="form-control"
+                            placeholder="City"
+                        >
+
+                    </div>
+
+
+                    <!-- JOB TYPE -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-semibold">
+                            Job Type
+                        </label>
+
+                        <select
+                            name="job_type"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                All Types
+                            </option>
+
+                            {% for value, label in job_types %}
+
+                                <option
+                                    value="{{ value }}"
+                                    {% if selected_job_type == value %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ label }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- EXPERIENCE -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-semibold">
+                            Experience
+                        </label>
+
+                        <select
+                            name="experience"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Any
+                            </option>
+
+                            <option
+                                value="0"
+                                {% if selected_experience == "0" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Fresher
+                            </option>
+
+                            <option
+                                value="1"
+                                {% if selected_experience == "1" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Up to 1 year
+                            </option>
+
+                            <option
+                                value="2"
+                                {% if selected_experience == "2" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Up to 2 years
+                            </option>
+
+                            <option
+                                value="3"
+                                {% if selected_experience == "3" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Up to 3 years
+                            </option>
+
+                            <option
+                                value="5"
+                                {% if selected_experience == "5" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Up to 5 years
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- SORT -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label fw-semibold">
+                            Sort
+                        </label>
+
+                        <select
+                            name="sort"
+                            class="form-select"
+                        >
+
+                            <option
+                                value="-created_at"
+                                {% if selected_sort == "-created_at" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Newest
+                            </option>
+
+                            <option
+                                value="created_at"
+                                {% if selected_sort == "created_at" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Oldest
+                            </option>
+
+                            <option
+                                value="-salary"
+                                {% if selected_sort == "-salary" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Highest Salary
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- BUTTON -->
+
+                    <div class="col-12">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            Search Jobs
+                        </button>
+
+                        <a
+                            href="{% url 'job_list' %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Clear
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- JOB RESULTS -->
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h4 class="fw-bold mb-0">
+            Available Jobs
+        </h4>
+
+        <span class="text-muted">
+            {{ jobs|length }} job{{ jobs|length|pluralize }}
+        </span>
+
+    </div>
+
+
+    {% for job in jobs %}
+
+        <div class="card shadow-sm border-0 mb-3">
+
+            <div class="card-body">
+
+                <div class="row align-items-center">
+
+
+                    <div class="col-md-8">
+
+                        <h4 class="fw-bold mb-1">
+                            {{ job.title }}
+                        </h4>
+
+                        <p class="mb-2 text-primary fw-semibold">
+                            {{ job.company_name }}
+                        </p>
+
+
+                        <div class="text-muted mb-2">
+
+                            <span class="me-3">
+                                📍 {{ job.location }}
+                            </span>
+
+                            <span class="me-3">
+                                💼 {{ job.job_type }}
+                            </span>
+
+                            <span>
+                                💰 ₹{{ job.salary }}
+                            </span>
+
+                        </div>
+
+
+                        <p class="mb-2">
+
+                            <strong>
+                                Experience:
+                            </strong>
+
+                            {% if job.experience == 0 %}
+                                Fresher
+                            {% else %}
+                                {{ job.experience }} year{{ job.experience|pluralize }}
+                            {% endif %}
+
+                        </p>
+
+
+                        <p class="mb-0">
+
+                            <strong>
+                                Deadline:
+                            </strong>
+
+                            {{ job.deadline }}
+
+                        </p>
+
+                    </div>
+
+
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+
+                        <a
+                            href="{% url 'job_detail' job.pk %}"
+                            class="btn btn-primary"
+                        >
+                            View Details
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    {% empty %}
+
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-body text-center py-5">
+
+                <h4>
+                    No jobs found
+                </h4>
+
+                <p class="text-muted mb-0">
+                    Try changing your search or filters.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+
+</div>
+
+
+</body>
+</html>

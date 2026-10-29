@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ job.title }} | Job Portal</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body class="bg-light">
+
+
+<!-- NAVBAR -->
+
+<nav class="navbar navbar-dark bg-dark">
+
+    <div class="container">
+
+        <a
+            class="navbar-brand fw-bold"
+            href="{% url 'home' %}"
+        >
+            Job Portal
+        </a>
+
+
+        <div>
+
+            {% if user.is_authenticated %}
+
+                <span class="text-white me-3">
+                    Hi, {{ user.username }}
+                </span>
+
+
+                {% if user.is_employer %}
+
+                    <a
+                        href="{% url 'employer_dashboard' %}"
+                        class="btn btn-outline-light me-2"
+                    >
+                        Dashboard
+                    </a>
+
+                {% else %}
+
+                    <a
+                        href="{% url 'seeker_dashboard' %}"
+                        class="btn btn-outline-light me-2"
+                    >
+                        My Applications
+                    </a>
+
+                {% endif %}
+
+
+                <form
+                    method="post"
+                    action="{% url 'logout' %}"
+                    class="d-inline"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-danger"
+                    >
+                        Logout
+                    </button>
+
+                </form>
+
+
+            {% else %}
+
+                <a
+                    href="{% url 'login' %}"
+                    class="btn btn-outline-light me-2"
+                >
+                    Login
+                </a>
+
+                <a
+                    href="{% url 'register' %}"
+                    class="btn btn-primary"
+                >
+                    Register
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+
+<!-- JOB DETAILS -->
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-9">
+
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4 p-md-5">
+
+
+                    <!-- TITLE -->
+
+                    <div class="mb-4">
+
+                        <span class="badge bg-success mb-2">
+                            {{ job.status }}
+                        </span>
+
+                        <h1 class="fw-bold">
+                            {{ job.title }}
+                        </h1>
+
+                        <h5 class="text-primary">
+                            {{ job.company_name }}
+                        </h5>
+
+                    </div>
+
+
+                    <!-- BASIC INFORMATION -->
+
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-md-4">
+
+                            <div class="bg-light p-3 rounded">
+
+                                <small class="text-muted">
+                                    Location
+                                </small>
+
+                                <div class="fw-semibold">
+                                    📍 {{ job.location }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="bg-light p-3 rounded">
+
+                                <small class="text-muted">
+                                    Job Type
+                                </small>
+
+                                <div class="fw-semibold">
+                                    💼 {{ job.job_type }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="bg-light p-3 rounded">
+
+                                <small class="text-muted">
+                                    Salary
+                                </small>
+
+                                <div class="fw-semibold">
+                                    💰 ₹{{ job.salary }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DESCRIPTION -->
+
+                    <h4 class="fw-bold mt-4">
+                        Job Description
+                    </h4>
+
+                    <p style="white-space: pre-line;">
+                        {{ job.description }}
+                    </p>
+
+
+                    <!-- SKILLS -->
+
+                    <h4 class="fw-bold mt-4">
+                        Required Skills
+                    </h4>
+
+                    <p style="white-space: pre-line;">
+                        {{ job.skills }}
+                    </p>
+
+
+                    <!-- EXPERIENCE -->
+
+                    <h4 class="fw-bold mt-4">
+                        Experience Required
+                    </h4>
+
+                    <p>
+
+                        {% if job.experience == 0 %}
+
+                            Fresher
+
+                        {% else %}
+
+                            {{ job.experience }}
+                            year{{ job.experience|pluralize }}
+
+                        {% endif %}
+
+                    </p>
+
+
+                    <!-- DEADLINE -->
+
+                    <h4 class="fw-bold mt-4">
+                        Application Deadline
+                    </h4>
+
+                    <p>
+                        {{ job.deadline }}
+                    </p>
+
+
+                    <hr class="my-4">
+
+
+                    <!-- ACTIONS -->
+
+                    <div class="d-flex gap-2 flex-wrap">
+
+
+                        <a
+                            href="{% url 'job_list' %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            ← Back to Jobs
+                        </a>
+
+
+                        {% if user.is_authenticated %}
+
+                            {% if user.is_seeker %}
+
+                                {% if job.deadline >= today %}
+
+                                    <a
+                                        href="{% url 'apply_job' job.pk %}"
+                                        class="btn btn-primary"
+                                    >
+                                        Apply Now
+                                    </a>
+
+                                {% else %}
+
+                                    <button
+                                        class="btn btn-secondary"
+                                        disabled
+                                    >
+                                        Application Closed
+                                    </button>
+
+                                {% endif %}
+
+                            {% elif user.is_employer %}
+
+                                <span class="text-muted align-self-center">
+                                    Employers cannot apply for jobs.
+                                </span>
+
+                            {% endif %}
+
+
+                        {% else %}
+
+                            <a
+                                href="{% url 'login' %}"
+                                class="btn btn-primary"
+                            >
+                                Login to Apply
+                            </a>
+
+                        {% endif %}
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</body>
+</html>
